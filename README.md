@@ -201,6 +201,8 @@ s.run()
 
 After fighting with [Flask](https://flask.palletsprojects.com/en/1.1.x/), [Bottle](http://bottlepy.org/docs/dev/), and then Python's own [http.server](https://docs.python.org/3/library/http.server.html) library, I decided to write my own web framework. I liked Flask, but it has far too many dependencies to work in my target environment. I liked Bottle even more, since it mirrors most of Flask's functionality without any dependencies, but it lacks the ability to handle concurrent connections. The surprisingly capable `http.server` library has zero dependencies and supports concurrent execution, but is ill-suited for building out an entire web application. I built *Swig*[^1] to solve all of these problems.
 
+Swig uses the `socket` library to interface with TCP sockets at the lowest level feasible for a language as performant as Python. As Julia Evans pointed out quite some time ago, [it makes little sense to go any lower](https://jvns.ca/blog/2014/08/12/what-happens-if-you-write-a-tcp-stack-in-python/).
+
 ## License
 
 This project is licensed under a [Creative Commons Attribution 4.0 International License](http://creativecommons.org/licenses/by/4.0/). Read more about the license, and my other disclaimers, [at my website](https://zacs.site/disclaimers.html). You may also view a local copy of the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License license in [LICENSE.md](./LICENSE.md).
