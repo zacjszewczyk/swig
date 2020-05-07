@@ -27,7 +27,7 @@ class Server():
     # - self: Class reference (Object)
     # - ip: IP at which to serve web server. Default: 127.0.0.1 (String)
     # - port: Port at which to serve web server. Default: 8000 (Int)
-    # - methods: List of supported HTTP methods. Default: {"GET"} (Set)
+    # - methods: List of supported HTTP methods. Default: {"HEAD",GET"} (Set)
     # - threads: Number of threads for request handling. Default: 8 (Int)
     # - logfile: Name of the logfile. Default: server.log (String)
     # - gzip: Flag to support gzip compression. Default: None (Bool)
@@ -36,7 +36,7 @@ class Server():
     # - background: Flag to background server execution. Default: False (Bool)
     # - https: Flag to signal use of HTTPS over HTTP. Default: False (Bool)
     # Return: None.
-    def __init__(self, ip="127.0.0.1", port=8000, methods={"GET"}, threads=8, logfile="server.log", gzip=None, verbose=True, background=False, https=False):
+    def __init__(self, ip="127.0.0.1", port=8000, methods={"HEAD","GET"}, threads=8, logfile="server.log", gzip=None, verbose=True, background=False, https=False):
         # Configure the server's IP address, and the port at which to serve it
         # If the user makes the web server available at localhost or 127.0.0.1,
         # create a private web server accessible from the local machine only.
@@ -351,20 +351,21 @@ class Server():
             if (gzip == True):
                 self.send_header(c,"Content-Encoding: gzip")
                 self.end_header(c)
-                
-                data = ""
-                for chunk in resource.get_content(method=method,target=target,body=body):
-                    data += chunk
+                if (method != "HEAD"): 
+                    data = ""
+                    for chunk in resource.get_content(method=method,target=target,body=body):
+                        data += chunk
 
-                compressed_data = z.compress(bytes(data,"utf-8")) + z.flush()
-                transmitted = self.stream(c,compressed_data)
+                    compressed_data = z.compress(bytes(data,"utf-8")) + z.flush()
+                    transmitted = self.stream(c,compressed_data)
             # If not using gzip compression, close the header block and stream
             # the response data back to the client.
             else:
                 self.end_header(c)
-                transmitted = 0
-                for chunk in resource.get_content(method=method,target=target,body=body):
-                    transmitted += self.stream(c,chunk)
+                if (method != "HEAD"): 
+                    transmitted = 0
+                    for chunk in resource.get_content(method=method,target=target,body=body):
+                        transmitted += self.stream(c,chunk)
             # End the stream
             self.end_stream(c)
         elif (ismethod(resource.get_content) == True):
@@ -377,13 +378,13 @@ class Server():
                 self.send_header(c,f"Content-Length: {len(compressed_data)}")
                 self.send_header(c,"Content-Encoding: gzip")
                 self.end_header(c)
-                transmitted = self.transmit(c,compressed_data)
+                if (method != "HEAD"): transmitted = self.transmit(c,compressed_data)
             # If not using gzip compression, send the appropriate Content-Length
             # header, close the header block, and transmit the data.
             else:
                 self.send_header(c,f"Content-Length: {resource.get_size(method=method,target=target,body=body)}")
                 self.end_header(c)
-                transmitted = self.transmit(c,resource.get_content(method=method,target=target,body=body))
+                if (method != "HEAD"): transmitted = self.transmit(c,resource.get_content(method=method,target=target,body=body))
 
         # Close the connection
         c.close()
@@ -593,7 +594,7 @@ class not_allowed(base_page):
 # If run as a standalone program, start a simple HTTP server with a single valid
 # endpoint, /, and error pages for 404 and 405 methods.
 if (__name__ == "__main__"):
-    s = Server(background=True,methods={"GET"})
+    s = Server(background=True)
     s.register("/", home())
     s.register("/404.html", not_found())
     s.register("/405.html", not_allowed())

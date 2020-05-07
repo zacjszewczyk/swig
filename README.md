@@ -49,7 +49,7 @@ Start a web server by running the script:
 $ python3 server.py
 ```
 
-In its default configuration, running `server.py` creates a private IPv4 web server available to the local machine only, served over port 8000, that supports only the *GET* HTTP method for a single endpoint: `/`. Opening [http://localhost:8000](http://localhost:8000) in your browser will display a simple "Hello, world!" message. GET requests for all other endpoints will receive a `404: Not Found` response and return the contents of a basic 404 page, while using any other HTTP method will cause the server to send a `405: Not Allowed` response and return the contents of a basic 405 page.
+In its default configuration, running `server.py` creates a private IPv4 web server available to the local machine only, served over port 8000, that supports both the *GET* and *HEAD* HTTP methods for a single endpoint: `/`. Opening [http://localhost:8000](http://localhost:8000) in your browser will display a simple "Hello, world!" message. GET requests for all other endpoints will receive a `404: Not Found` response and return the contents of a basic 404 page, while using any other HTTP method will cause the server to send a `405: Not Allowed` response and return the contents of a basic 405 page.
 
 ### Configuration Options
 
@@ -57,7 +57,7 @@ Swig supports the following configuration options, passed as parameters to the `
 
 * **ip**: IP at which to serve web server. Default: 127.0.0.1 (String). Use this parameter to specify the interface on which to make the web server available, or use "0.0.0.0" or "::" to accept incoming connections on all IPv4 or IPv6 interfaces, respectively.
 * **port**: Port at which to serve web server. Default: 8000 (Int). Swig requires that you use a port in the range 1024 to 65535 inclusive.
-* **methods**: List of supported HTTP methods. Default: {"GET"} (Set). All HTTP methods not included in this set, including invalid ones, will cause the server to send a `405: Not Allowed` response and return the contents of a basic 405 page.
+* **methods**: List of supported HTTP methods. Default: {"HEAD",GET"} (Set). All HTTP methods not included in this set, including invalid ones, will cause the server to send a `405: Not Allowed` response and return the contents of a basic 405 page.
 * **threads**: Number of threads for request handling. Default: 8 (Int).
 * **logfile**: Name of the logfile. Default: server.log (String). Swig will attempt to write its log file to the path you specify here.
 * **gzip**: Flag to support gzip compression for clients that send the `Accept-Encoding: gzip` header. Default: None (Bool).
@@ -71,13 +71,13 @@ Check out these example configurations.
 s = Server()
 ```
 
-This creates a new instance of the web server, `s`, using the default configuration values described above. As I described earlier, this creates a private IPv4 web server available to the local machine only, served over port 8000, that supports only the *GET* HTTP method for a single endpoint: `/`. Opening [http://localhost:8000](http://localhost:8000) in your browser will display a simple "Hello, world!" message. GET requests for all other endpoints will receive a `404: Not Found` response and return the contents of a basic 404 page, while using any other HTTP method will cause the server to send a `405: Not Allowed` response and return the contents of a basic 405 page.
+This creates a new instance of the web server, `s`, using the default configuration values described above. As I described earlier, this creates a private IPv4 web server available to the local machine only, served over port 8000, that supports the *HEAD* and *GET* HTTP methods for a single endpoint: `/`. Opening [http://localhost:8000](http://localhost:8000) in your browser will display a simple "Hello, world!" message. GET requests for all other endpoints will receive a `404: Not Found` response and return the contents of a basic 404 page, while using any other HTTP method will cause the server to send a `405: Not Allowed` response and return the contents of a basic 405 page.
 
 ```
 s = Server(ip="::", port=8080, methods={"GET", "POST"}, background=True, threads=32)
 ```
 
-This creates a public IPv6 web server available to the entire local area network, served over port 8080, that can handle multiple simultaneous connections using up to thirty-two threads. It supports both GET and POST HTTP methods. In this case, opening the IPv6 version of localhost at port 8080--[http://[::]:8080](http://[::]:8000) or [http://[::1]:8080](http://[::1]:8000)--in your browser will display that simple "Hello, world!" message. Replace `[::]` or `[::1]` with the IPv6 address of your server to view these pages on any other device in the network. 
+This creates a public IPv6 web server available to the entire local area network, served over port 8080, that can handle multiple simultaneous connections using up to thirty-two threads. It supports both GET and POST HTTP methods, but not the default HEAD. In this case, opening the IPv6 version of localhost at port 8080--[http://[::]:8080](http://[::]:8000) or [http://[::1]:8080](http://[::1]:8000)--in your browser will display that simple "Hello, world!" message. Replace `[::]` or `[::1]` with the IPv6 address of your server to view these pages on any other device in the network. 
 
 ### Registering Endpoints
 
@@ -144,6 +144,27 @@ class home(base_page):
         self.content = "Goodbye, cruel world."
 
 s.register("/", home())
+```
+
+Although the examples above associated an endpoint string with a class, Swig also supports using regular expressions. This comes in handy when building a blog, for example: instead of hundreds of `s.register("/blog/first-post", first_post())`, `s.register("/blog/second-post", second_post())`, ... `s.register("/blog/n-post", n_post())` stanzas, you could use `s.register("/blog/.*", posts())` instead. The regular expression `"/blog/.*"` would match any URI that begins with "/blog/", which would cause Swig to call the `get_content_type`, `get_content`, and `get_size` methods in the `posts()` class with the `kwargs["method"]`, `kwargs["target"]`, and `kwargs["body"]` parameters. `kwargs["target"]` could then allow you to differentiate between `/blog/first-post` and `/blog/n-post`. Check out the short example below:
+
+```
+# Class: posts
+# Purpose: Serve individual blog posts below the /blog/ endpoint.
+class posts(base_page):
+    def __init__(self):
+        self.content_type = "text/html"
+
+    def get_content(self,**kwargs):
+        # Extract the target post as the portion of the string after /blog/
+        uri = kwargs["target"][6:]
+
+        # ... Read post identified in uri ... #
+
+    def get_size(self,**kwargs):
+        return "-"
+
+s.register("/blog/.*", posts())
 ```
 
 ### Starting the Server
