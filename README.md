@@ -13,6 +13,7 @@ Swig is a monolithic, multithreaded, micro web framework designed for air-gapped
     * [Registering Endpoints](#registering-endpoints)
     * [Starting the Server](#starting-the-server)
     * [Enabling HTTPS](#enabling-https)
+* [Tests](#tests)
 * [Background and Motivation](#background-and-motivation)
 * [License](#license)
 
@@ -217,6 +218,12 @@ s.run()
 ```
 
 [http://localhost:8000](http://localhost:8000) will now fail, since the server no longer supports plain HTTP connections. Try [**https**://localhost:8000](https://localhost:8000) instead--you will get "Goodbye, cruel world." after dismissing the browser warning, and going to [https://localhost:8000/contact](https://localhost:8000/contact) will yield "... Just kidding. Let's chat." You can now also view these pages from any device on the local network if you know the server's IP address. For example, if my local machine has an IPv4 address of 10.0.0.10, I can go to [https://10.0.0.10:8000](https://10.0.0.10:8000) on my phone to view the home page, and [https://10.0.0.10:8000/contact](https://10.0.0.10:8000/contact) on my iPad to see the invitation to chat.
+
+## Tests
+
+Swig's unit tests live in `server_tests.py`, which relies on a custom web requests library I built. Until I release that library, you will have to replace `Web` with your own web interface to see that Swig passes all its tests. I wrote these tests to make sure I did not break anything during development, so while I feel they cover Swig's main functionality, I'm sure there are gaps and edge cases for which I did not account. Please let me know. 
+
+In addition to unit tests, I also regularly serve Swig on Mac OS, iOS (thanks, Pythonista), and CentOS on a LAN, across multiple WANs, and through a WireGuard VPN to make sure it holds up to the peculiarities of those platforms and protocols. It has performed flawlessly.
 
 ## Background and Motivation
 
