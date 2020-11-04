@@ -233,6 +233,6 @@ Swig uses the `socket` library to interface with TCP sockets at the lowest level
 
 ## License
 
-This project is licensed under a [Creative Commons Attribution 4.0 International License](http://creativecommons.org/licenses/by/4.0/). Read more about the license, and my other disclaimers, [at my website](https://zacs.site/disclaimers.html). You may also view a local copy of the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License license in [LICENSE.md](./LICENSE.md).
+This project is licensed under the [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License](https://creativecommons.org/licenses/by-nc-sa/4.0/). Read more about the license, and my other disclaimers, [at my website](https://zacs.site/disclaimers.html). Generally speaking, this license allows individuals to remix this work provided they release their adaptation under the same license and cite this project as the original, and prevents anyone from turning this work or its derivatives into a commercial product.
 
 [>1] Flask, Bottle, and Swig--are you getting it?
