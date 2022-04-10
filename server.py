@@ -568,6 +568,18 @@ class home(base_page):
         self.title = "Home"
         self.content = "Hello, world!"
 
+# Class: not_valid
+# Inherits: base_page
+# Purpose: Define a basic error page to illustrate proper structure and make the
+# server usable. Note: to support a more complex or dynamic page by overriding
+# the methods defined in base_page, simply define them as new methods here
+# after the __init__ definition.
+class not_valid(base_page):
+    def __init__(self):
+        self.content_type = "text/html"
+        self.title = "400: Bad Request"
+        self.content = "Error: The server cannot or will not process the request due to something that is perceived to be a client error (e.g., malformed request syntax, invalid request message framing, or deceptive request routing)."
+
 # Class: not_found
 # Inherits: base_page
 # Purpose: Define a basic error page to illustrate proper structure and make the
