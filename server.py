@@ -250,25 +250,41 @@ class Server():
     # - self: Class reference (Object)
     # - args: Passed argument list (List)
     # Return: 
-    # - HTTP response code (Int)
+    # - A tuple of [HTTP response code, bytes transmitted] (Tuple)
     def handle(self,args):
         # Read the gzip flag set during class initialization. 
         gzip = self.gzip
 
+        # Instantiate variables upon which to make decisions
+        msg = "" # HTTP response message
+        method = "" # HTTP request method
+        target = "" # Requested resource
+
         # Extract the socket connection from the arguments provided.
         c = args[0]
 
-        # Read and parse request headers up to 4096 bytes. Turn into a key-value
-        # dictionary.
+        # Read and parse request headers up to 4096 bytes. Turn into a
+        # key-value dictionary.
         request = self.parse_request(c.recv(4096))
 
-        # Extract the HTTP method and target from the request line
-        method = request["request_line"].split()[0]
-        target = request["request_line"].split()[1]
+        # Handle bad requests or requests that request no resources.
+        if (len(request["request_line"]) == 0 or " " not in request["request_line"]):
+            msg = "400 Bad Request"
+            method = False
+            target = "/400.html"
+        # Otherwise, extract the HTTP method and target from the request.
+        else:
+            # Extract the HTTP method and target from the request line
+            method = request["request_line"].split()[0]
+            target = request["request_line"].split()[1]
 
+        # If we have already determined an appropriate message and target,
+        # skip the block that determines the appropriate message and target.
+        if (msg != "" and target != ""):
+            pass
         # Make sure client is using an allowable HTTP method. Redirect to an
         # error page if not.
-        if (method not in self.allowed_methods):
+        elif (method not in self.allowed_methods):
             msg = "405 Not Allowed"
             target = "/405.html"
         # If the HTTP request method is supported, and if requested resource is
