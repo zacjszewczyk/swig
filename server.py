@@ -279,11 +279,15 @@ class Server():
         elif (any([fullmatch(x,target) for x in self.endpoints.keys()])):
             msg = "200 OK"
             if ("POST" in request["request_line"]):
-                if ("body" not in request.keys()):
-                    if ("Content-Length" in request.keys()):
-                        body = c.recv(int(request["Content-Length"]))
+                if (int(request["Content-Length"]) > 4096):
+                    d = 4096
+                    while d == 4096:
+                        d = c.recv(4096)
+                        body = request["body"] + d.decode("utf-8")
+                        d = len(d)
                 else:
                     body = request["body"]
+
         # If the client requested an unregistered endpoint, use the 404 Not
         # Found response and set the target page to the error page.
         else:
